@@ -14,12 +14,15 @@ from lama_cleaner.schema import Config, HDStrategy, LDMSampler
 # It checks for a GPU (cuda) and falls back to CPU if not available.
 device = "cuda" if torch.cuda.is_available() else "cpu"
 # Create a comprehensive Config object with all required fields
+# High-quality configuration to achieve a more seamless and natural result.
+# - HDStrategy.CROP: Splits the image into parts for high-resolution processing.
+# - ldm_steps=50: Increases the number of generation steps for finer detail.
 lama_config = Config(
-    hd_strategy=HDStrategy.ORIGINAL,
+    hd_strategy=HDStrategy.CROP,
     ldm_sampler=LDMSampler.ddim,
-    ldm_steps=20,                      # Sampling steps
-    hd_strategy_crop_margin=32,        # Margin for cropping (pixels)
-    hd_strategy_crop_trigger_size=512, # Size triggering HD strategy
+    ldm_steps=50,                      # Increased for higher quality
+    hd_strategy_crop_margin=128,       # Increased margin for smoother blending
+    hd_strategy_crop_trigger_size=1024, # Trigger HD strategy for larger images
     hd_strategy_resize_limit=2048      # Maximum image size limit
 )
 model = ModelManager(name="lama", device=device, config=lama_config)
