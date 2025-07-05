@@ -38,9 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 imageEditor.style.display = 'flex';
                 resultImageDiv.style.display = 'none'; // 前回の結果を隠す
                 downloadButton.style.display = 'none'; // 前回のダウンロードボタンを隠す
+
+                // Canvasのサイズを元の画像と同じにする
                 canvas.width = image.width;
                 canvas.height = image.height;
-                ctx.drawImage(image, 0, 0);
+                console.log('Canvas size (original image dimensions):', canvas.width, canvas.height);
+                
+                // Canvasに画像を描画
+                ctx.drawImage(image, 0, 0, image.width, image.height);
 
                 // ブラシの初期設定
                 ctx.lineWidth = brushSizeSlider.value;
@@ -130,9 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getMousePos(canvas, evt) {
         const rect = canvas.getBoundingClientRect();
+        // Canvasの表示サイズと実際のピクセル寸法の比率を考慮
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
         return {
-            x: evt.clientX - rect.left,
-            y: evt.clientY - rect.top
+            x: (evt.clientX - rect.left) * scaleX,
+            y: (evt.clientY - rect.top) * scaleY
         };
     }
 });

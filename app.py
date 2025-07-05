@@ -1,12 +1,13 @@
-from flask import Flask, request, jsonify, render_template
+import cv2
+from flask import Flask, jsonify, request, render_template
+from iopaint.model_manager import ModelManager
+from iopaint.schema import HDStrategy, InpaintRequest, LDMSampler
 from PIL import Image
 import numpy as np
+import torch
 import io
 import base64
-import cv2
-import torch
-from lama_cleaner.model_manager import ModelManager
-from lama_cleaner.schema import Config, HDStrategy, LDMSampler
+
 
 # --- AI Model Initialization ---
 # Initialize the LaMa model for inpainting.
@@ -17,13 +18,10 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # High-quality configuration to achieve a more seamless and natural result.
 # - HDStrategy.CROP: Splits the image into parts for high-resolution processing.
 # - ldm_steps=50: Increases the number of generation steps for finer detail.
-lama_config = Config(
-    hd_strategy=HDStrategy.CROP,
+lama_config = InpaintRequest(
+    hd_strategy=HDStrategy.ORIGINAL,
     ldm_sampler=LDMSampler.ddim,
-    ldm_steps=50,                      # Increased for higher quality
-    hd_strategy_crop_margin=128,       # Increased margin for smoother blending
-    hd_strategy_crop_trigger_size=1024, # Trigger HD strategy for larger images
-    hd_strategy_resize_limit=2048      # Maximum image size limit
+    ldm_steps=50
 )
 model = ModelManager(name="lama", device=device, config=lama_config)
 # -----------------------------
@@ -33,6 +31,51 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+def resize_with_padding(image: Image.Image, max_dim: int, padding_ratio: float = 0.05):
+    """
+    画像をアスペクト比を維持したままリサイズし、指定された最大辺の長さに収まるように調整し、
+    さらに白い余白を追加します。
+
+    Args:
+        image (PIL.Image.Image): 処理する画像。
+        max_dim (int): 画像の長い方の辺の最大ピクセル数。
+        padding_ratio (float): 余白の比率。画像の一番長い辺に対する余白の割合。
+
+    Returns:
+        PIL.Image.Image: リサイズされ、余白が追加された画像。
+    """
+    original_width, original_height = image.size
+    
+    # アスペクト比を維持しつつ、max_dimに収まるようにリサイズ
+    if original_width > original_height:
+        new_width = max_dim
+        new_height = int(original_height * (max_dim / original_width))
+    else:
+        new_height = max_dim
+        new_width = int(original_width * (max_dim / original_height))
+
+    resized_image = image.resize((new_width, new_height), Image.LANCZOS)
+
+    # 余白の計算
+    # 最も長い辺を基準に余白を計算
+    base_dim = max(new_width, new_height)
+    padding_size = int(base_dim * padding_ratio)
+
+    # 新しいキャンバスサイズ
+    padded_width = new_width + 2 * padding_size
+    padded_height = new_height + 2 * padding_size
+
+    # 白い背景の新しい画像を作成
+    padded_image = Image.new("RGB", (padded_width, padded_height), (255, 255, 255))
+    
+    # リサイズされた画像を中央に配置
+    paste_x = padding_size
+    paste_y = padding_size
+    padded_image.paste(resized_image, (paste_x, paste_y))
+
+    return padded_image
+
 
 @app.route('/erase', methods=['POST'])
 def erase():
@@ -46,6 +89,14 @@ def erase():
         # Open images
         image_data = Image.open(image_file.stream).convert('RGB')
         mask_data = Image.open(mask_file.stream).convert('RGB')
+
+        # Define a maximum dimension for processing (e.g., 512x512)
+        # This will be the longer side of the image after resizing, before padding.
+        max_dim_for_processing = 512 
+
+        # Resize image and mask with padding
+        image_data = resize_with_padding(image_data, max_dim_for_processing)
+        mask_data = resize_with_padding(mask_data, max_dim_for_processing)
 
         # Pillow画像を明示的にuint8型のNumPy配列へ変換
         image_np = np.array(image_data)
@@ -69,9 +120,7 @@ def erase():
         # We define "red" as pixels with a high R value and low G and B values.
         is_red_mask = (mask_np[:, :, 0] > 200) & (mask_np[:, :, 1] < 100) & (mask_np[:, :, 2] < 100)
         binary_mask = np.where(is_red_mask, 255, 0).astype(np.uint8)
-
         
-
         # Perform high-quality inpainting using the LaMa model (which expects BGR)
         # Only run the model if there is something to inpaint.
         if np.sum(binary_mask) > 0:
@@ -82,7 +131,14 @@ def erase():
                 binary_mask = binary_mask.reshape(binary_mask.shape[0], binary_mask.shape[1])
             binary_mask = binary_mask.astype(np.uint8) # Ensure dtype
 
-            
+            # Ensure mask and image have the same dimensions
+            if image_bgr.shape[:2] != binary_mask.shape[:2]:
+                print(f"Resizing mask from {binary_mask.shape[:2]} to {image_bgr.shape[:2]}")
+                binary_mask = cv2.resize(binary_mask, (image_bgr.shape[1], image_bgr.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+            print(f"Image shape before model: {image_bgr.shape}")
+            print(f"Mask shape before model: {binary_mask.shape}")
+
             result_bgr = model(image_bgr, binary_mask, config=lama_config)
             
             # Convert model output to a displayable format.

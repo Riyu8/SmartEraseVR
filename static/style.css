@@ -1,7 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
+
 input[type="file"] {
     display: none;
 }
-@import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
 
 body {
     font-family: 'Mochiy Pop One', sans-serif;
@@ -121,6 +122,8 @@ button:hover {
     border-radius: 20px;
     margin-bottom: 1rem;
     background-color: #F8F8F8; /* 薄いグレー */
+    max-width: 100%; /* 親要素の幅に合わせる */
+    height: auto; /* アスペクト比を維持 */
 }
 
 .controls {
