@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartErase VR</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='SmartErase VR.png') }}" alt="Logo">
+            <h1>SmartErase VR</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">ホーム</a></li>
+                <li><a href="#">使い方</a></li>
+                <li><a href="#">ギャラリー</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>写真の不要な部分を、魔法のように消し去ろう</h2>
+            <p>AIが自動で背景を補完して、自然な仕上がりに。</p>
+            <button id="upload-button">画像をアップロード</button>
+            <input type="file" id="file-input" accept="image/*" aria-label="選択">
+        </section>
+
+        <section class="image-editor">
+            <canvas id="canvas"></canvas>
+            <div class="controls">
+                <label for="brush-size">ブラシサイズ:</label>
+                <input type="range" id="brush-size" min="5" max="50" value="20">
+                <button id="erase-button">削除</button>
+                <button id="download-button">ダウンロード</button>
+            </div>
+            <div class="result-image">
+                <h3>処理結果</h3>
+                <img id="processed-image" src="" alt="処理済み画像">
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 SmartErase VR. All Rights Reserved.</p>
+    </footer>
+
+    <script src="static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+input[type="file"] {
+    display: none;
+}
+@import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
+
+body {
+    font-family: 'Mochiy Pop One', sans-serif;
+    background-color: #FCE4EC; /* 淡いピンク */
+    color: #8B4513; /* 茶色 */
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+header {
+    background-color: #FFB6C1; /* ロゴのピンク */
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    width: 50px;
+    height: 50px;
+    margin-right: 1rem;
+}
+
+h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: #FFFFFF; /* 白 */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+nav li {
+    margin-left: 2rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #FFDAB9; /* ピーチ */
+}
+
+main {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hero {
+    background-color: #FFDAB9; /* ピーチ */
+    padding: 4rem 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    color: #8B4513; /* 茶色 */
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: #A0522D; /* シエナ */
+    margin-bottom: 2rem;
+}
+
+button {
+    background-color: #FF69B4; /* ホットピンク */
+    color: #FFFFFF;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-family: 'Mochiy Pop One', sans-serif;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    background-color: #FF1493; /* ディープピンク */
+    transform: translateY(-2px);
+}
+
+.image-editor {
+    display: flex; /* 初期状態では非表示 */
+    flex-direction: column;
+    align-items: center;
+    background-color: #FFFFFF; /* 白 */
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#canvas {
+    border: 5px dashed #FFB6C1; /* ロゴのピンクの点線 */
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    background-color: #F8F8F8; /* 薄いグレー */
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap; /* レスポンシブ対応 */
+}
+
+.controls label {
+    margin-right: 1rem;
+    font-size: 1.1rem;
+    color: #8B4513; /* 茶色 */
+}
+
+.controls input[type="range"] {
+    width: 150px;
+    margin-right: 1rem;
+    -webkit-appearance: none;
+    height: 8px;
+    border-radius: 5px;
+    background: #FFDAB9; /* ピーチ */
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+}
+
+.controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #FF69B4; /* ホットピンク */
+    cursor: pointer;
+}
+
+.controls input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #FF69B4; /* ホットピンク */
+    cursor: pointer;
+}
+
+.controls button {
+    margin: 0.5rem; /* マージンを調整 */
+    padding: 0.8rem 1.5rem; /* パディングを調整 */
+    font-size: 1rem; /* フォントサイズを調整 */
+}
+
+.result-image {
+    margin-top: 2rem;
+    display: none;
+}
+
+.result-image img {
+    max-width: 100%;
+    height: auto;
+    border: 5px dashed #FFB6C1; /* ロゴのピンクの点線 */
+    border-radius: 20px;
+}
+
+footer {
+    background-color: #FFB6C1; /* ロゴのピンク */
+    padding: 1rem;
+    position: relative; /* fixedからrelativeに変更してコンテンツの下に配置 */
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem; /* メインコンテンツとの間にスペース */
+}
