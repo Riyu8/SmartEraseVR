@@ -186,6 +186,9 @@ button:hover {
     height: auto;
     border: 5px dashed #FFB6C1; /* ロゴのピンクの点線 */
     border-radius: 20px;
+    transform: scale(1.5);
+    margin-top: 5rem; /* 上の要素とのマージンを調整 */
+    margin-bottom: 3rem; /* 下の要素とのマージンを調整 */
 }
 
 footer {
