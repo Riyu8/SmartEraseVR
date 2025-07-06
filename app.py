@@ -94,9 +94,18 @@ def erase():
         # This will be the longer side of the image after resizing, before padding.
         max_dim_for_processing = 512 
 
-        # Resize image and mask with padding
-        image_data = resize_with_padding(image_data, max_dim_for_processing)
-        mask_data = resize_with_padding(mask_data, max_dim_for_processing)
+        # アスペクト比を維持してリサイズ（余白なし）
+        original_width, original_height = image_data.size
+        if original_width > original_height:
+            new_width = max_dim_for_processing
+            new_height = int(original_height * (max_dim_for_processing / original_width))
+        else:
+            new_height = max_dim_for_processing
+            new_width = int(original_width * (max_dim_for_processing / original_height))
+
+        image_data = image_data.resize((new_width, new_height), Image.LANCZOS)
+        # マスクも同じサイズにリサイズ
+        mask_data = mask_data.resize((new_width, new_height), Image.LANCZOS)
 
         # Pillow画像を明示的にuint8型のNumPy配列へ変換
         image_np = np.array(image_data)
