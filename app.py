@@ -17,33 +17,37 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # Create a comprehensive Config object with all required fields
 # High-quality configuration to achieve a more seamless and natural result.
 # - HDStrategy.CROP: Splits the image into parts for high-resolution processing.
-# - ldm_steps=50: Increases the number of generation steps for finer detail.
+# - ldm_steps=75: Increases the number of steps for smoother results.
+# - controlnet=True,cfg_scale=7.0: Helps reduce visible artifacts
 lama_config = InpaintRequest(
-    hd_strategy=HDStrategy.ORIGINAL,
+    hd_strategy=HDStrategy.CROP,
     ldm_sampler=LDMSampler.ddim,
-    ldm_steps=50
+    ldm_steps=75,
+    controlnet=True,
+    cfg_scale=7.0
 )
 model = ModelManager(name="lama", device=device, config=lama_config)
 # -----------------------------
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-def resize_with_padding(image: Image.Image, max_dim: int, padding_ratio: float = 0.05):
+
+# アスペクト比を維持しながら画像を指定された最大辺の長さに収まるようリサイズします（余白無し）
+def resize_without_padding(image: Image.Image, max_dim: int):
     """
-    画像をアスペクト比を維持したままリサイズし、指定された最大辺の長さに収まるように調整し、
-    さらに白い余白を追加します。
+    画像をアスペクト比を維持したままリサイズし、指定された最大辺の長さに収まるように調整します。
 
     Args:
         image (PIL.Image.Image): 処理する画像。
         max_dim (int): 画像の長い方の辺の最大ピクセル数。
-        padding_ratio (float): 余白の比率。画像の一番長い辺に対する余白の割合。
 
     Returns:
-        PIL.Image.Image: リサイズされ、余白が追加された画像。
+        PIL.Image.Image: リサイズされた画像。
     """
     original_width, original_height = image.size
     
@@ -56,25 +60,8 @@ def resize_with_padding(image: Image.Image, max_dim: int, padding_ratio: float =
         new_width = int(original_width * (max_dim / original_height))
 
     resized_image = image.resize((new_width, new_height), Image.LANCZOS)
-
-    # 余白の計算
-    # 最も長い辺を基準に余白を計算
-    base_dim = max(new_width, new_height)
-    padding_size = int(base_dim * padding_ratio)
-
-    # 新しいキャンバスサイズ
-    padded_width = new_width + 2 * padding_size
-    padded_height = new_height + 2 * padding_size
-
-    # 白い背景の新しい画像を作成
-    padded_image = Image.new("RGB", (padded_width, padded_height), (255, 255, 255))
     
-    # リサイズされた画像を中央に配置
-    paste_x = padding_size
-    paste_y = padding_size
-    padded_image.paste(resized_image, (paste_x, paste_y))
-
-    return padded_image
+    return resized_image
 
 
 @app.route('/erase', methods=['POST'])
@@ -90,22 +77,12 @@ def erase():
         image_data = Image.open(image_file.stream).convert('RGB')
         mask_data = Image.open(mask_file.stream).convert('RGB')
 
-        # Define a maximum dimension for processing (e.g., 512x512)
-        # This will be the longer side of the image after resizing, before padding.
-        max_dim_for_processing = 512 
+        # Resize image and mask without padding
+        # リサイズ処理は行わないようにコメントアウト
+        # max_dim_for_processing = 512
 
-        # アスペクト比を維持してリサイズ（余白なし）
-        original_width, original_height = image_data.size
-        if original_width > original_height:
-            new_width = max_dim_for_processing
-            new_height = int(original_height * (max_dim_for_processing / original_width))
-        else:
-            new_height = max_dim_for_processing
-            new_width = int(original_width * (max_dim_for_processing / original_height))
-
-        image_data = image_data.resize((new_width, new_height), Image.LANCZOS)
-        # マスクも同じサイズにリサイズ
-        mask_data = mask_data.resize((new_width, new_height), Image.LANCZOS)
+        # image_data = resize_without_padding(image_data, max_dim_for_processing)
+        # mask_data = resize_without_padding(mask_data, max_dim_for_processing)
 
         # Pillow画像を明示的にuint8型のNumPy配列へ変換
         image_np = np.array(image_data)
@@ -188,6 +165,7 @@ def erase():
         print(f"An error occurred: {e}")
         # Return a generic error message to the client
         return jsonify({"error": "サーバー内部でエラーが発生しました。"}), 500
+
 
 if __name__ == "__main__":
     app.run()

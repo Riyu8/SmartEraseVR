@@ -3,11 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>結果</title>
+    <title>修正結果</title>
     <!-- スタイルシートやスクリプトのリンクをここに追加 -->
+    <style>
+        .result-image img {
+            transform: scale(0.5);
+            transform-origin: center center;
+            display: block;
+            margin: auto;
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <!-- 本文コンテンツはここに -->
-    <p>これは修正後のテンプレートです。</p>
+    <div class="image-container">
+        {% if image %}
+            <div class="result-image">
+                <img src="{{ url_for('static', filename='uploads/processed_image.png') }}" alt="修正後の画像">
+            </div>
+        {% else %}
+            <p>画像がありません。</p>
+        {% endif %}
+    </div>
 </body>
 </html>
