@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 変数の初期化 ---
     let isDrawing = false;
     let originalImage = null; // 元の画像(Imageオブジェクト)を保持する変数
+    let lastX = 0;
+    let lastY = 0;
 
     // --- イベントリスナー ---
 
@@ -114,13 +116,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const pos = getMousePos(canvas, e);
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
+        lastX = pos.x;
+        lastY = pos.y;
     };
 
     const draw = (e) => {
         if (!isDrawing) return;
         const pos = getMousePos(canvas, e);
+
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+
+        lastX = pos.x;
+        lastY = pos.y;
     };
 
     const stopDrawing = () => {
